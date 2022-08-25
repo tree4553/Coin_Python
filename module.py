@@ -9,7 +9,10 @@ with open("../bybit.key", encoding="utf-8") as f:
 bybit = ccxt.bybit(config={
     'apiKey' : api_key,
     'secret' : secret,
-    'enableRateLimit' : True
+    'enableRateLimit' : True,
+    'options': {
+        'defaultType': 'future'
+    }
 })
 
 btc = 'BTCUSD'
@@ -33,15 +36,28 @@ def current_price2(name): # 현재 가격 조회
     pprint.pprint(ticker)
 
 def before_data_min(name): # 1분봉 데이터 얻기
-    ohlcvs = bybit.fetch_ohlcv(name, timeframe='1m', limit=60)
+    ohlcvs = bybit.fetch_ohlcv(name, timeframe='1m', limit=3)
     df = pd.DataFrame(ohlcvs, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
     df.set_index('datetime', inplace=True)
     print(df)
+    return df
+
+def before_data_min2(name):
+    ohlcvs = bybit.fetch_ohlcv(name, timeframe='1m', limit=2)
+    return ohlcvs
 
 def get_quote(name): # 호가 조회
     orderbook = bybit.fetch_order_book(name)
     pprint.pprint(orderbook['asks'])
     pprint.pprint(orderbook['bids'])
 
-pprint.pprint(bybit.fetch_balance()['BTC']['free'])
+def make_long_order():
+    bybit.create_market_buy_order(btc, 1)
+
+def make_short_order():
+    bybit.create_market_sell_order(btc, 1)
+
+#print(bybit.fetch_balance()['BTC']['free'])
+#make_long_order()
+make_short_order()
