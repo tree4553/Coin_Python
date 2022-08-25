@@ -1,17 +1,17 @@
 import ccxt, pprint
 from datetime import datetime
 import pandas as pd
-with open("bybit.key", encoding="utf-8") as f:
+with open("../bybit.key", encoding="utf-8") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret = lines[1].strip()
-'''
+
 bybit = ccxt.bybit(config={
-    'apiKey' = api_key,
-    'secret' = secret,
-    
+    'apiKey' : api_key,
+    'secret' : secret,
+    'enableRateLimit' : True
 })
-'''
+
 btc = 'BTCUSD'
 
 def show_ticker(): # 티커 조회
@@ -44,4 +44,4 @@ def get_quote(name): # 호가 조회
     pprint.pprint(orderbook['asks'])
     pprint.pprint(orderbook['bids'])
 
-print(api_key, secret)
+pprint.pprint(bybit.fetch_balance()['BTC']['free'])
