@@ -68,6 +68,7 @@ def make_short_order():
 #make_short_order()
 '''
 
+
 '''
 from pybit import inverse_perpetual
 session_unauth = inverse_perpetual.HTTP(
@@ -88,40 +89,9 @@ pprint.pprint(session_unauth.query_kline(
 ))
 '''
 
-# pybit inverse_perpetual이 testnet.bybit를 url로 사용하고 있어서 실제 마켓 데이터를 얻어오지 못한다.
-'''
-from time import sleep
-from pybit import inverse_perpetual
-ws_inverseP = inverse_perpetual.WebSocket(
-    test=True,
-    ping_interval=30,  # the default is 30
-    ping_timeout=10,  # the default is 10
-    domain="bybit"  # the default is "bybit"
-)
-def handle_message(msg):
-    stamp_time = msg['data'][0]['timestamp']
-    date_time = datetime.fromtimestamp(int(stamp_time/1000000))
-    open = msg['data'][0]['open']
-    high = msg['data'][0]['high']
-    low = msg['data'][0]['low']
-    close = msg['data'][0]['close']
-    volume = msg['data'][0]['volume']
-    print(date_time)
-    print('%-10s' % 'open : ', open)
-    print('%-10s' % 'high : ', high)
-    print('%-10s' % 'low : ', low)
-    print('%-10s' % 'close : ', close)
-    print('%-10s' % 'volume: ',volume)
-# To subscribe to multiple symbols,
-# pass a list: ["BTCUSD", "ETHUSD"]
-# pass an inverval
-ws_inverseP.kline_stream(
-    handle_message, "BTCUSD", "1"
-)
-while True:
-    sleep(1)
-'''
 
+# 다른거로 시도
+'''
 import hmac
 import json
 import time
@@ -148,10 +118,15 @@ param = "api_key={api_key}&expires={expires}&signature={signature}".format(
 
 url = ws_url + "?" + param
 
+def funcA(a, b):
+    print(a, b)
+
 ws = websocket.WebSocketApp(
     url=url
 )
-'''
+
+ws.send('{"op":"ping"}')
+
 ws.send(
     json.dumps({
         "op": "auth",
@@ -159,5 +134,50 @@ ws.send(
     })
 )
 '''
-#ws.send('{"op":"ping"}')
-ws.send('{"op":"subscribe","args":["publicTrade.BTCUSDT"]}')
+
+# 2차 시도
+'''
+from pybit import inverse_futures
+session = inverse_futures.HTTP(
+    endpoint = "https://api.bybit.com"
+)
+print(session.server_time())
+print(session.announcement())
+'''
+
+
+# pybit inverse_perpetual이 testnet.bybit를 url로 사용하고 있어서 실제 마켓 데이터를 얻어오지 못한다.
+# ↑ WebSocket 생성자의 test 옵션이 True이면 testnet으로 연결하고 False이면 real Market으로 연결한다.
+# 일단 실시간 가격 정보 얻어오는 기능 구현 완료
+# 이 기능을 웹소켓으로 만들어서 사용할지 python으로 사용할지 고민해보자
+from time import sleep
+from pybit import inverse_perpetual
+ws_inverseP = inverse_perpetual.WebSocket(
+    test=False,
+    ping_interval=30,  # the default is 30
+    ping_timeout=10,  # the default is 10
+    domain="bybit"  # the default is "bybit"
+)
+def handle_message(msg):
+    stamp_time = msg['data'][0]['timestamp']
+    date_time = datetime.fromtimestamp(int(stamp_time/1000000))
+    open = msg['data'][0]['open']
+    high = msg['data'][0]['high']
+    low = msg['data'][0]['low']
+    close = msg['data'][0]['close']
+    volume = msg['data'][0]['volume']
+    print(date_time)
+    print('%-10s' % 'open : ', open)
+    print('%-10s' % 'high : ', high)
+    print('%-10s' % 'low : ', low)
+    print('%-10s' % 'close : ', close)
+    print('%-10s' % 'volume: ',volume)
+# To subscribe to multiple symbols,
+# pass a list: ["BTCUSD", "ETHUSD"]
+# pass an inverval
+ws_inverseP.kline_stream(
+    handle_message, "BTCUSD", "1"
+)
+while True:
+    sleep(1)
+
