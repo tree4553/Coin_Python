@@ -150,6 +150,9 @@ print(session.announcement())
 # ↑ WebSocket 생성자의 test 옵션이 True이면 testnet으로 연결하고 False이면 real Market으로 연결한다.
 # 일단 실시간 가격 정보 얻어오는 기능 구현 완료
 # 이 기능을 웹소켓으로 만들어서 사용할지 python으로 사용할지 고민해보자
+
+# 웹소켓은 읽어오는데 특화된 기능인것같다.
+# application에서 비동기로 돌려서 실시간으로 데이터를 읽어오는데 사용하자.
 from time import sleep
 from pybit import inverse_perpetual
 ws_inverseP = inverse_perpetual.WebSocket(
